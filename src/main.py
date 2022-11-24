@@ -3,14 +3,14 @@
 from vasya import InputConnectReport, InputConnectTable, VasyaException
 from pathlib import Path
 
-from typing import Dict
+from typing import Dict, Type
 from vasya import InputConnectBase
 
 current_dir = Path(__file__).parent
 
 
 def main():
-    choices: Dict[str, InputConnectBase] = {
+    choices: Dict[str, Type[InputConnectBase]] = {
         "вакансии": InputConnectTable,
         "статистика": InputConnectReport,
     }
