@@ -1,0 +1,4 @@
+openpyxl
+matplotlib
+jinja2
+pdfkit
