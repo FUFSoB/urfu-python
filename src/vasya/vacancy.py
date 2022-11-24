@@ -145,15 +145,29 @@ class Salary:
         self.salary_gross = salary_gross
         self.salary_currency = salary_currency
 
+    def __repr__(self) -> str:
+        return f"{self.salary_from}-{self.salary_to} {self.salary_currency} ({self.salary_gross})"
+
+    def __eq__(self, other: "Salary") -> bool:
+        if not isinstance(other, Salary):
+            return NotImplemented
+        return (
+            self.salary_from == other.salary_from
+            and self.salary_to == other.salary_to
+            and self.salary_gross == other.salary_gross
+            and self.salary_currency == other.salary_currency
+        )
+
+    def __float__(self) -> float:
+        return (self.salary_from + self.salary_to) / 2
+
     def __lt__(self, other: "Salary") -> bool:
         if not isinstance(other, Salary):
             return NotImplemented
 
         rub = self.to_rub()
         other_rub = other.to_rub()
-        return ((rub.salary_from + rub.salary_to) / 2) < (
-            (other_rub.salary_from + other_rub.salary_to) / 2
-        )
+        return float(rub) < float(other_rub)
 
     def __contains__(self, item: float) -> bool:
         return self.salary_from <= item <= self.salary_to
@@ -360,7 +374,7 @@ class Vacancy:
         self.published_at = datetime.strptime(published_at, "%Y-%m-%dT%H:%M:%S%z")
 
         self.description = self._str(description) if description else None
-        self.key_skills = skillslist(key_skills.split(";")) if key_skills else None
+        self.key_skills = skillslist(key_skills.split("\n")) if key_skills else None
         self.experience = experience_dict[experience_id] if experience_id else None
 
         self.premium = (
