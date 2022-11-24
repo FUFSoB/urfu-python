@@ -1,0 +1,2 @@
+class VasyaException(Exception):
+    pass

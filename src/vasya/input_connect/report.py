@@ -1,81 +1,19 @@
-import csv
-from datetime import datetime
 from dataclasses import dataclass
 import openpyxl
 from openpyxl.styles import Font
 from openpyxl.styles.borders import Border, Side
+import matplotlib.pyplot as plt
+from jinja2 import Environment, FileSystemLoader
+import pdfkit
+import os
+from os import path
 
-from typing import Any, Dict, Iterator, Union
+from .base import InputConnect
+from ..dataset import DataSet
+
+from typing import Any, Dict, List, Union
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.cell.cell import Cell
-
-
-class VasyaException(Exception):
-    pass
-
-
-class Vacancy:
-    currency_to_rub = {
-        "AZN": 35.68,
-        "BYR": 23.91,
-        "EUR": 59.90,
-        "GEL": 21.74,
-        "KGS": 0.76,
-        "KZT": 0.13,
-        "RUR": 1,
-        "UAH": 1.64,
-        "USD": 60.66,
-        "UZS": 0.0055,
-    }
-
-    def __init__(
-        self,
-        *,
-        name: str,
-        salary_from: str,
-        salary_to: str,
-        salary_currency: str,
-        area_name: str,
-        published_at: str,
-        **kwargs,
-    ) -> None:
-        self.name = name
-        self.salary = (
-            (float(salary_from) + float(salary_to))
-            / 2
-            * self.currency_to_rub[salary_currency]
-        )
-        self.area_name = area_name
-        self.published_at = datetime.strptime(published_at, "%Y-%m-%dT%H:%M:%S%z")
-
-
-class DataSet:
-    def __init__(self, file_name: str, reader: csv.DictReader) -> None:
-        self.file_name = file_name
-        self._reader = reader
-        self._vacancies = [
-            Vacancy(**row) for row in reader if all(row) and all(row.values())
-        ]
-
-    def __iter__(self) -> Iterator[Vacancy]:
-        return iter(self._vacancies)
-
-    def __len__(self) -> int:
-        return len(self._vacancies)
-
-    @classmethod
-    def from_file(cls, file_name: str) -> "DataSet":
-        """Создает экземпляр класса из CSV-файла"""
-        file = open(file_name, "r", encoding="utf-8-sig")
-
-        if not file.readline():
-            raise VasyaException("Пустой файл")
-        if not file.readline():
-            raise VasyaException("Нет данных")
-
-        file.seek(0)
-        reader = csv.DictReader(file)
-        return cls(file_name, reader)
 
 
 @dataclass
@@ -84,7 +22,7 @@ class StatsData:
     count: int
 
 
-class InputConnect:
+class InputConnectReport(InputConnect):
     def __init__(self, file_name: str, profession: str) -> None:
         self.file_name = file_name
         self.profession = profession
@@ -95,11 +33,17 @@ class InputConnect:
         self.total_vacancies = 0
 
     @classmethod
-    def from_input(cls) -> "InputConnect":
+    def from_input(cls) -> "InputConnectReport":
         file_name = input("Введите название файла: ")
         profession = input("Введите название профессии: ")
 
         return cls(file_name, profession)
+
+    def prepare_data(self):
+        vacancies = DataSet.from_file(self.file_name)
+        vacancies.to_list()
+        self.count_vacancies(vacancies)
+        self.make_stats_as_average()
 
     def count_vacancies(self, vacancies: DataSet):
         def increment_and_add(data: StatsData, value: float) -> StatsData:
@@ -114,11 +58,11 @@ class InputConnect:
             self.vacancy_stats.setdefault(year, StatsData(0, 0))
             self.cities_stats.setdefault(vacancy.area_name, StatsData(0, 0))
 
-            increment_and_add(self.years_stats[year], vacancy.salary)
-            increment_and_add(self.cities_stats[vacancy.area_name], vacancy.salary)
+            increment_and_add(self.years_stats[year], vacancy.salary_rub)
+            increment_and_add(self.cities_stats[vacancy.area_name], vacancy.salary_rub)
 
             if self.profession in vacancy.name:
-                increment_and_add(self.vacancy_stats[year], vacancy.salary)
+                increment_and_add(self.vacancy_stats[year], vacancy.salary_rub)
 
     def make_stats_as_average(self):
         for year in self.years_stats:
@@ -188,6 +132,14 @@ class InputConnect:
         )[:10]
         return {name: self.cities_stats[name] for name in sorted_names}
 
+    def get_answer(
+        self, template_path: str = "pdf_template.html", *args, **kwargs
+    ) -> None:
+        self.print_answer()
+        Report.generate_excel(self)
+        Report.generate_image(self, "graph.png")
+        Report.generate_pdf(self, template_path, "report.pdf")
+
 
 class Report:
     thin_border = Border(
@@ -216,7 +168,7 @@ class Report:
         return data[cell]
 
     @classmethod
-    def generate_excel(cls, input_connect: InputConnect) -> None:
+    def generate_excel(cls, input_connect: InputConnectReport) -> None:
         wb = openpyxl.Workbook()
         wb.remove(wb["Sheet"])
 
@@ -261,15 +213,136 @@ class Report:
 
         wb.save("report.xlsx")
 
+    @classmethod
+    def add_simple_graph(
+        cls,
+        axes: plt.Axes,
+        x_val: List[int],
+        y_val1: List[float],
+        y_val2: List[float],
+        name_values1: str,
+        name_values2: str,
+        title: str,
+    ) -> None:
+        axes.set_title(title, fontsize=16)
+        axes.grid(axis="y")
+        axes.bar([v + 0.2 for v in x_val], y_val2, label=name_values2, width=0.4)
+        axes.bar([v - 0.2 for v in x_val], y_val1, label=name_values1, width=0.4)
+        axes.legend()
+        axes.tick_params(axis="x", labelrotation=90)
 
-if __name__ == "__main__":
-    try:
-        input_connect = InputConnect.from_input()
-        dataset = DataSet.from_file(input_connect.file_name)
-        input_connect.count_vacancies(dataset)
-        input_connect.make_stats_as_average()
-        input_connect.print_answer()
+    @classmethod
+    def add_horizontal_graph(
+        cls, axes: plt.Axes, x_val: List[str], y_val: List[float], title: str
+    ) -> None:
+        axes.set_title(title, fontsize=16)
+        axes.grid(axis="x")
+        axes.barh(x_val, y_val)
+        axes.invert_yaxis()
 
-        Report.generate_excel(input_connect)
-    except VasyaException as ex:
-        print(ex)
+    @classmethod
+    def add_circle_diagramm(
+        cls, axes: plt.Axes, names: List[str], values: List[int], title: str
+    ) -> None:
+        axes.set_title(title, fontsize=16)
+        names.append("Другие")
+        values.append(1 - sum(values))
+        axes.pie(values, labels=names)
+
+    @classmethod
+    def generate_image(cls, input_connect: InputConnectReport, filename: str) -> None:
+        fig, axis = plt.subplots(2, 2)
+        plt.rcParams["font.size"] = 8
+        cls.add_simple_graph(
+            axis[0, 0],
+            input_connect.years_stats,
+            [
+                input_connect.years_stats[key].salary
+                for key in input_connect.years_stats
+            ],
+            [
+                input_connect.vacancy_stats[key].salary
+                for key in input_connect.vacancy_stats
+            ],
+            "Средняя з/п",
+            f"з/п {input_connect.profession}",
+            "Уровень зарплат по годам",
+        )
+        cls.add_simple_graph(
+            axis[0, 1],
+            input_connect.years_stats,
+            [input_connect.years_stats[key].count for key in input_connect.years_stats],
+            [
+                input_connect.vacancy_stats[key].count
+                for key in input_connect.vacancy_stats
+            ],
+            "Количество вакансий",
+            f"Количество вакансий {input_connect.profession}",
+            "Количество вакансий по годам",
+        )
+        sorted_cities_by_salary = input_connect.get_sorted_cities("salary")
+        cls.add_horizontal_graph(
+            axis[1, 0],
+            [key for key in sorted_cities_by_salary],
+            [sorted_cities_by_salary[key].salary for key in sorted_cities_by_salary],
+            "Уровень зарплат по городам",
+        )
+        sorted_cities_by_count = input_connect.get_sorted_cities("count")
+        cls.add_circle_diagramm(
+            axis[1, 1],
+            [key for key in sorted_cities_by_count],
+            [sorted_cities_by_count[key].count for key in sorted_cities_by_count],
+            "Доля вакансий по городам",
+        )
+        plt.axis("equal")
+        fig.set_size_inches(16, 9)
+        fig.tight_layout(h_pad=1)
+        plt.savefig(filename)
+
+    @classmethod
+    def generate_pdf(
+        cls, input_connect: InputConnectReport, template_name: str, filename: str
+    ) -> None:
+        env = Environment(loader=FileSystemLoader("."))
+        template = env.get_template(template_name)
+        render_rules = cls.get_render_rules(input_connect)
+        pdf_template = template.render(render_rules)
+        config = pdfkit.configuration(
+            wkhtmltopdf=(
+                "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe"
+                if os.name == "nt"
+                else "/usr/bin/wkhtmltopdf"
+            )
+        )
+        pdfkit.from_string(
+            pdf_template,
+            filename,
+            configuration=config,
+            options={"enable-local-file-access": True},
+        )
+
+    @classmethod
+    def get_render_rules(cls, input_connect: InputConnectReport) -> Dict[str, Any]:
+        rules = {
+            "profession": input_connect.profession,
+            "image_path": path.abspath("graph.png"),
+        }
+
+        for i in input_connect.years_stats:
+            rules[f"all_avg_salary{i}"] = input_connect.years_stats[i].salary
+            rules[f"all_count{i}"] = input_connect.years_stats[i].count
+        for i in input_connect.vacancy_stats:
+            rules[f"profession_avg_salary{i}"] = input_connect.vacancy_stats[i].salary
+            rules[f"profession_count{i}"] = input_connect.vacancy_stats[i].count
+
+        cities = input_connect.get_sorted_cities("salary")
+        for n, i in enumerate(cities, start=1):
+            rules[f"table1_city{n}"] = i
+            rules[f"city_salary{n}"] = cities[i].salary
+
+        cities = input_connect.get_sorted_cities("count")
+        for n, i in enumerate(cities, start=1):
+            rules[f"table2_city{n}"] = i
+            rules[f"city_count{n}"] = f"{round(cities[i].count * 100, 2)}%"
+
+        return rules
