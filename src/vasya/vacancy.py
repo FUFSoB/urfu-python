@@ -10,7 +10,9 @@ else:
 
 
 class skillslist(list):
-    """Список для упрощения работы с навыками"""
+    """
+    Список для упрощения работы с навыками
+    """
 
     def __lt__(self, other: list) -> bool:
         if not isinstance(other, list):
@@ -22,9 +24,33 @@ class skillslist(list):
 
 
 class Currency:
-    """Класс валюты с курсом к рублю"""
+    """
+    Класс валюты с курсом к рублю
+
+    Attributes
+    ----------
+    code: str
+        Код валюты
+    name: str
+        Название валюты
+    rate_to_rub: float
+        Курс к рублю
+    """
 
     def __init__(self, code: str, name: str, rate_to_rub: float) -> None:
+        """
+        Инициализация класса
+
+        Parameters
+        ----------
+        code: str
+            Код валюты
+        name: str
+            Название валюты
+        rate_to_rub: float
+            Курс к рублю
+        """
+
         self.code = code
         self.name = name
         self.rate_to_rub = float(rate_to_rub)
@@ -33,9 +59,25 @@ class Currency:
         return self.code
 
     def __eq__(self, other: str) -> bool:
+        if not isinstance(other, str):
+            return NotImplemented
         return self.code == other or self.name == other
 
     def convert_to_rub(self, value: float) -> float:
+        """
+        Конвертирует валюту в рубли
+
+        Parameters
+        ----------
+        value: float
+            Сумма в валюте
+
+        Returns
+        -------
+        float
+            Сумма в рублях
+        """
+
         return value * self.rate_to_rub
 
     __mul__ = convert_to_rub
@@ -63,6 +105,17 @@ class Salary:
     """
     Устанавливает все основные поля зарплаты, а также метод
     для перевода зарплаты в рубли в случае необходимости
+
+    Attributes
+    ----------
+    salary_from: float
+        Нижняя граница зарплаты
+    salary_to: float
+        Верхняя граница зарплаты
+    salary_gross: bool
+        Зарплата указана до вычета налогов
+    salary_currency: Currency
+        Валюта зарплаты
     """
 
     def __init__(
@@ -72,6 +125,21 @@ class Salary:
         salary_gross: bool,
         salary_currency: Currency,
     ) -> None:
+        """
+        Инициализация класса
+
+        Parameters
+        ----------
+        salary_from: float
+            Нижняя граница зарплаты
+        salary_to: float
+            Верхняя граница зарплаты
+        salary_gross: bool
+            Зарплата указана до вычета налогов
+        salary_currency: Currency
+            Валюта зарплаты
+        """
+
         self.salary_from = salary_from
         self.salary_to = salary_to
         self.salary_gross = salary_gross
@@ -100,7 +168,15 @@ class Salary:
         )
 
     def to_rub(self) -> "Salary":
-        """Переводит зарплату в рубли"""
+        """
+        Переводит зарплату в рубли
+
+        Returns
+        -------
+        Salary
+            Новый объект с зарплатой в рублях
+        """
+
         if self.salary_currency == "RUR":
             return self
         return Salary(
@@ -115,9 +191,27 @@ Element = Union[str, Salary, skillslist, datetime]
 
 
 class Experience(str):
-    """Класс для упрощения работы с опытом"""
+    """
+    Класс для упрощения работы со строками опыта работы
+
+    Attributes
+    ----------
+    order: int
+        Порядковый номер опыта работы
+    """
+
+    order: int = -1
 
     def set_order(self, order: int) -> Self:
+        """
+        Устанавливает порядковый номер опыта работы
+
+        Parameters
+        ----------
+        order: int
+            Порядковый номер опыта работы
+        """
+
         self.order = order
         return self
 
@@ -136,7 +230,32 @@ experience_dict = {
 
 
 class Vacancy:
-    """Устанавливает все основные поля вакансии"""
+    """
+    Устанавливает все основные поля вакансии
+
+    Attributes
+    ----------
+    name: str
+        Название вакансии
+    salary_rub: float
+        Зарплата в рублях
+    area_name: str
+        Название города
+    published_at: datetime
+        Дата публикации вакансии
+    description: Optional[str]
+        Описание вакансии
+    key_skills: Optional[skillslist]
+        Список ключевых навыков
+    experience: Optional[Experience]
+        Опыт работы
+    premium: Optional[str]
+        Премиум вакансия (Да/Нет)
+    employer_name: Optional[str]
+        Название компании
+    salary: Optional[Salary]
+        Зарплата
+    """
 
     ordered_key_names = {
         "name": "Название",
@@ -165,6 +284,20 @@ class Vacancy:
 
     @classmethod
     def _str(cls, value: str) -> str:
+        """
+        Удаляет теги из строки
+
+        Parameters
+        ----------
+        value: str
+            Строка
+
+        Returns
+        -------
+        str
+            Строка без тегов
+        """
+
         return "\r\n".join(
             " ".join(i.split()) for i in cls.re_tags.sub("", value).split("\r\n")
         ).strip()
@@ -186,6 +319,37 @@ class Vacancy:
         employer_name: Optional[str] = None,
         salary_gross: Optional[str] = None,
     ) -> None:
+        """
+        Инициализация класса
+
+        Parameters
+        ----------
+        name: str
+            Название вакансии
+        salary_from: str
+            Нижняя граница оклада
+        salary_to: str
+            Верхняя граница оклада
+        salary_currency: str
+            Идентификатор валюты оклада
+        area_name: str
+            Название города
+        published_at: str
+            Дата публикации вакансии
+        description: Optional[str]
+            Описание вакансии
+        key_skills: Optional[str]
+            Список ключевых навыков
+        experience_id: Optional[str]
+            Идентификатор опыта работы
+        premium: Optional[str]
+            Премиум вакансия (true/false)
+        employer_name: Optional[str]
+            Название компании
+        salary_gross: Optional[str]
+            Оклад указан до вычета налогов (true/false)
+        """
+
         self.name = self._str(name)
 
         self.salary_rub = (
@@ -204,15 +368,27 @@ class Vacancy:
         )
         self.employer_name = self._str(employer_name) if employer_name else None
 
-        self.salary = salary_gross and Salary(
-            float(salary_from),
-            float(salary_to),
-            salary_gross.lower() == "true",
-            currency_dict[salary_currency],
+        self.salary = (
+            Salary(
+                float(salary_from),
+                float(salary_to),
+                salary_gross.lower() == "true",
+                currency_dict[salary_currency],
+            )
+            if salary_gross
+            else None
         )
 
     def formatted_data(self) -> Generator[Element, None, None]:
-        """Возвращает данные вакансии подготовленные для вывода"""
+        """
+        Возвращает данные вакансии, подготовленные для вывода
+
+        Returns
+        -------
+        Generator[Element, None, None]
+            Данные вакансии
+        """
+
         MISSING = object()
         for key in self.ordered_key_names:
             data: Element = getattr(self, key, MISSING)

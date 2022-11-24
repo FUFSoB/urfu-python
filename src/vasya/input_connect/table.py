@@ -19,6 +19,25 @@ MISSING = object()
 
 
 class InputConnectTable(InputConnect):
+    """
+    Класс-коннектор для генерации таблицы
+
+    Attributes
+    ----------
+    file_name: str
+        Путь до файла
+    filter_by: Optional[Tuple[str, str]]
+        Кортеж, содержащий ключ и значение для фильтрации
+    sort_by: Optional[str]
+        Ключ для сортировки
+    reverse_sort: bool
+        Обратная сортировка
+    limit: List[int]
+        Список, содержащий границы вывода таблицы
+    needed_columns: List[str]
+        Список, содержащий названия колонок, которые нужно вывести
+    """
+
     _data: DataSet = None
     _prepared_data: List[Vacancy] = MISSING
 
@@ -31,6 +50,24 @@ class InputConnectTable(InputConnect):
         limit: List[int],
         needed_columns: List[str],
     ) -> None:
+        """
+        Конструктор класса.
+
+        Parameters
+        ----------
+        file_name: str
+            Путь до файла
+        filter_by: Optional[Tuple[str, str]]
+            Кортеж, содержащий ключ и значение для фильтрации
+        sort_by: Optional[str]
+            Ключ для сортировки
+        reverse_sort: bool
+            Обратная сортировка
+        limit: List[int]
+            Список, содержащий границы вывода таблицы
+        needed_columns: List[str]
+            Список, содержащий названия колонок, которые нужно вывести
+        """
         self.file_name = file_name
         self.filter_by = filter_by
         self.sort_by = sort_by
@@ -40,7 +77,19 @@ class InputConnectTable(InputConnect):
 
     @classmethod
     def from_input(cls) -> "InputConnectTable":
-        """Создает экземпляр класса из параметров, вводимых пользователем"""
+        """
+        Метод для создания объекта класса по вводу пользователя.
+
+        Raises
+        ------
+        VasyaException
+            Ввод некорректен
+
+        Returns
+        -------
+        InputConnectTable
+            Экземпляр класса
+        """
 
         file_name = input("Введите название файла: ")
         filter_by = input("Введите параметр фильтрации: ").split(": ")
@@ -70,15 +119,47 @@ class InputConnectTable(InputConnect):
         return cls(file_name, filter_by, sort_by, reverse_sort, limit, needed_headers)
 
     def prepare_data(self) -> None:
+        """
+        Метод для подготовки данных к выводу.
+
+        Raises
+        ------
+        VasyaException
+            Файл не найден или в нём нет данных
+        """
         self._prepared_data = self.get_processed_data().to_list()
 
     def get_data(self) -> DataSet:
-        """Возвращает экземпляр класса DataSet"""
+        """
+        Возвращает экземпляр класса DataSet
+
+        Raises
+        ------
+        VasyaException
+            Файл не найден или в нём нет данных
+
+        Returns
+        -------
+        DataSet
+            Экземпляр класса DataSet
+        """
 
         return DataSet.from_file(self.file_name)
 
     def get_processed_data(self) -> DataSet:
-        """Возвращает экземпляр класса DataSet с применёнными фильтрами и сортировкой"""
+        """
+        Возвращает экземпляр класса DataSet с применёнными фильтрами и сортировкой
+
+        Raises
+        ------
+        VasyaException
+            Файл не найден или в нём нет данных
+
+        Returns
+        -------
+        DataSet
+            Экземпляр класса DataSet
+        """
 
         data = self.get_data()
         self.apply_filter(data)
@@ -87,7 +168,14 @@ class InputConnectTable(InputConnect):
         return data
 
     def apply_filter(self, data: DataSet) -> None:
-        """Применяет фильтр к экземпляру класса DataSet"""
+        """
+        Применяет фильтр к экземпляру класса DataSet
+
+        Parameters
+        ----------
+        data: DataSet
+            Экземпляр класса DataSet
+        """
 
         filter_by = self.filter_by
         if filter_by:
@@ -112,7 +200,14 @@ class InputConnectTable(InputConnect):
             data.apply_filter(func)
 
     def apply_sort(self, data: DataSet) -> None:
-        """Применяет сортировку к экземпляру класса DataSet"""
+        """
+        Применяет сортировку к экземпляру класса DataSet
+
+        Parameters
+        ----------
+        data: DataSet
+            Экземпляр класса DataSet
+        """
 
         sort_by = self.sort_by
         reverse_sort = self.reverse_sort
@@ -121,7 +216,15 @@ class InputConnectTable(InputConnect):
             data.apply_sort(lambda vacancy: getattr(vacancy, key), reverse_sort)
 
     def get_answer(self, *args, **kwargs) -> None:
-        """Выводит таблицу в консоль"""
+        """
+        Выводит таблицу в консоль
+
+        Raises
+        ------
+        VasyaException
+            Файл не найден, в нём нет данных или применённые фильтры
+            не вернули результатов
+        """
 
         if self._prepared_data is MISSING:
             self.prepare_data()

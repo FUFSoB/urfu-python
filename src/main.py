@@ -10,6 +10,8 @@ current_dir = Path(__file__).parent
 
 
 def main():
+    """Основная функция программы."""
+
     choices: Dict[str, Type[InputConnectBase]] = {
         "вакансии": InputConnectTable,
         "статистика": InputConnectReport,

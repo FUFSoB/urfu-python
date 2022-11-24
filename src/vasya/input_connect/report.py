@@ -11,19 +11,52 @@ from os import path
 from .base import InputConnect
 from ..dataset import DataSet
 
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.cell.cell import Cell
 
 
 @dataclass
 class StatsData:
+    """
+    Класс для хранения данных для отчёта.
+    """
+
     salary: float
     count: int
 
 
 class InputConnectReport(InputConnect):
+    """
+    Класс-коннектор для создания отчёта.
+
+    Attributes
+    ----------
+    file_name: str
+        Путь до файла с данными
+    profession: str
+        Профессия, по которой будет производиться анализ
+    years_stats: Dict[int, StatsData]
+        Статистика по годам
+    cities_stats: Dict[str, StatsData]
+        Статистика по городам
+    vacancy_stats: Dict[int, StatsData]
+        Статистика по годам по профессии
+    total_vacancies: int
+        Общее количество вакансий
+    """
+
     def __init__(self, file_name: str, profession: str) -> None:
+        """
+        Инициализация класса
+
+        Parameters
+        ----------
+        file_name: str
+            Путь до файла с данными
+        profession: str
+            Профессия, по которой будет производиться анализ
+        """
         self.file_name = file_name
         self.profession = profession
 
@@ -34,18 +67,44 @@ class InputConnectReport(InputConnect):
 
     @classmethod
     def from_input(cls) -> "InputConnectReport":
+        """
+        Метод для создания объекта класса по вводу пользователя.
+
+        Returns
+        -------
+        InputConnectReport
+            Объект класса
+        """
         file_name = input("Введите название файла: ")
         profession = input("Введите название профессии: ")
 
         return cls(file_name, profession)
 
-    def prepare_data(self):
+    def prepare_data(self) -> None:
+        """
+        Метод для подготовки данных для отчёта.
+
+        Raises
+        ------
+        VasyaException
+            Файл не найден или в нём нет данных
+        """
+
         vacancies = DataSet.from_file(self.file_name)
         vacancies.to_list()
         self.count_vacancies(vacancies)
         self.make_stats_as_average()
 
-    def count_vacancies(self, vacancies: DataSet):
+    def count_vacancies(self, vacancies: DataSet) -> None:
+        """
+        Метод для подсчёта статистики по вакансиям.
+
+        Parameters
+        ----------
+        vacancies: DataSet
+            Датасет с вакансиями
+        """
+
         def increment_and_add(data: StatsData, value: float) -> StatsData:
             data.salary += value
             data.count += 1
@@ -64,7 +123,11 @@ class InputConnectReport(InputConnect):
             if self.profession in vacancy.name:
                 increment_and_add(self.vacancy_stats[year], vacancy.salary_rub)
 
-    def make_stats_as_average(self):
+    def make_stats_as_average(self) -> None:
+        """
+        Метод для конвертации существующей статистики в среднюю зарплату.
+        """
+
         for year in self.years_stats:
             self.years_stats[year].salary = int(
                 self.years_stats[year].salary // self.years_stats[year].count
@@ -88,7 +151,11 @@ class InputConnectReport(InputConnect):
                     self.vacancy_stats[year].salary // self.vacancy_stats[year].count
                 )
 
-    def print_answer(self):
+    def print_answer(self) -> None:
+        """
+        Метод для вывода ответа в консоль.
+        """
+
         print(
             "Динамика уровня зарплат по годам:",
             {year: self.years_stats[year].salary for year in self.years_stats},
@@ -124,7 +191,21 @@ class InputConnectReport(InputConnect):
             {city: self.cities_stats[city].count for city in cities_sorted},
         )
 
-    def get_sorted_cities(self, attr_name: str):
+    def get_sorted_cities(self, attr_name: str) -> Dict[str, StatsData]:
+        """
+        Метод для получения отсортированных городов по атрибуту.
+
+        Parameters
+        ----------
+        attr_name: str
+            Название атрибута
+
+        Returns
+        -------
+        Dict[str, StatsData]
+            Словарь из десяти городов, отсортированных по атрибуту
+        """
+
         sorted_names = sorted(
             self.cities_stats,
             key=lambda x: getattr(self.cities_stats[x], attr_name),
@@ -135,13 +216,31 @@ class InputConnectReport(InputConnect):
     def get_answer(
         self, template_path: str = "pdf_template.html", *args, **kwargs
     ) -> None:
+        """
+        Метод для получения результата обработки входных данных.
+
+        Выводит статистику в консоль.
+
+        Создаёт файлы report.xlsx, graph.png и report.pdf
+        в директории, из которой был запущен скрипт.
+
+        Parameters
+        ----------
+        template_path: str
+            Путь к шаблону для генерации pdf-файла
+        """
+
         self.print_answer()
-        Report.generate_excel(self)
+        Report.generate_excel(self, "report.xlsx")
         Report.generate_image(self, "graph.png")
         Report.generate_pdf(self, template_path, "report.pdf")
 
 
 class Report:
+    """
+    Класс. хранящий в себе статические методы для генерации отчётов.
+    """
+
     thin_border = Border(
         left=Side(style="thin"),
         right=Side(style="thin"),
@@ -151,8 +250,28 @@ class Report:
 
     @classmethod
     def create_header(
-        cls, data: Worksheet, letter: str, name: str, width: Union[int, None] = None
+        cls, data: Worksheet, letter: str, name: str, width: Optional[int] = None
     ) -> int:
+        """
+        Метод для создания заголовка столбца.
+
+        Parameters
+        ----------
+        data: Worksheet
+            Лист, в котором будет создан заголовок
+        letter: str
+            Буква столбца
+        name: str
+            Название заголовка
+        width: Optional[int]
+            Ширина столбца
+
+        Returns
+        -------
+        int
+            Ширина столбца
+        """
+
         cell = f"{letter}1"
         data[cell] = name
         data[cell].font = Font(bold=True)
@@ -162,13 +281,45 @@ class Report:
 
     @classmethod
     def set_cell(cls, data: Worksheet, letter: str, row: int, value: Any) -> Cell:
+        """
+        Метод для создания ячейки.
+
+        Parameters
+        ----------
+        data: Worksheet
+            Лист, в котором будет создана ячейка
+        letter: str
+            Буква столбца
+        row: int
+            Номер строки
+        value: Any
+            Значение ячейки
+
+        Returns
+        -------
+        Cell
+            Созданная ячейка
+        """
+
         cell = f"{letter}{row}"
         data[cell] = value
         data[cell].border = cls.thin_border
         return data[cell]
 
     @classmethod
-    def generate_excel(cls, input_connect: InputConnectReport) -> None:
+    def generate_excel(cls, input_connect: InputConnectReport, filename: str) -> None:
+        """
+        Метод для генерации excel-файла.
+        Создаёт файл filename в директории, из которой был запущен скрипт.
+
+        Parameters
+        ----------
+        input_connect: InputConnectReport
+            Объект, хранящий в себе статистику
+        filename: str
+            Название файла
+        """
+
         wb = openpyxl.Workbook()
         wb.remove(wb["Sheet"])
 
@@ -211,7 +362,7 @@ class Report:
             )
             cell.number_format = "0.00%"
 
-        wb.save("report.xlsx")
+        wb.save(filename)
 
     @classmethod
     def add_simple_graph(
@@ -224,6 +375,27 @@ class Report:
         name_values2: str,
         title: str,
     ) -> None:
+        """
+        Метод для добавления простого графика.
+
+        Parameters
+        ----------
+        axes: plt.Axes
+            Объект, хранящий в себе данные для построения графика
+        x_val: List[int]
+            Список значений по оси X
+        y_val1: List[float]
+            Список значений по оси Y для первого графика
+        y_val2: List[float]
+            Список значений по оси Y для второго графика
+        name_values1: str
+            Название первого графика
+        name_values2: str
+            Название второго графика
+        title: str
+            Название графика
+        """
+
         axes.set_title(title, fontsize=16)
         axes.grid(axis="y")
         axes.bar([v + 0.2 for v in x_val], y_val2, label=name_values2, width=0.4)
@@ -235,6 +407,21 @@ class Report:
     def add_horizontal_graph(
         cls, axes: plt.Axes, x_val: List[str], y_val: List[float], title: str
     ) -> None:
+        """
+        Метод для добавления горизонтального графика.
+
+        Parameters
+        ----------
+        axes: plt.Axes
+            Объект, хранящий в себе данные для построения графика
+        x_val: List[str]
+            Список значений по оси X
+        y_val: List[float]
+            Список значений по оси Y
+        title: str
+            Название графика
+        """
+
         axes.set_title(title, fontsize=16)
         axes.grid(axis="x")
         axes.barh(x_val, y_val)
@@ -244,6 +431,21 @@ class Report:
     def add_circle_diagramm(
         cls, axes: plt.Axes, names: List[str], values: List[int], title: str
     ) -> None:
+        """
+        Метод для добавления круговой диаграммы.
+
+        Parameters
+        ----------
+        axes: plt.Axes
+            Объект, хранящий в себе данные для построения графика
+        names: List[str]
+            Список названий секторов
+        values: List[int]
+            Список значений секторов
+        title: str
+            Название графика
+        """
+
         axes.set_title(title, fontsize=16)
         names.append("Другие")
         values.append(1 - sum(values))
@@ -251,6 +453,18 @@ class Report:
 
     @classmethod
     def generate_image(cls, input_connect: InputConnectReport, filename: str) -> None:
+        """
+        Метод для генерации изображения.
+        Создаёт файл filename в директории, из которой был запущен скрипт.
+
+        Parameters
+        ----------
+        input_connect: InputConnectReport
+            Объект, хранящий в себе данные для построения графика
+        filename: str
+            Название файла
+        """
+
         fig, axis = plt.subplots(2, 2)
         plt.rcParams["font.size"] = 8
         cls.add_simple_graph(
@@ -303,6 +517,20 @@ class Report:
     def generate_pdf(
         cls, input_connect: InputConnectReport, template_name: str, filename: str
     ) -> None:
+        """
+        Метод для генерации pdf-файла.
+        Создаёт файл filename в директории, из которой был запущен скрипт.
+
+        Parameters
+        ----------
+        input_connect: InputConnectReport
+            Объект, хранящий в себе данные для построения графика
+        template_name: str
+            Путь до файла шаблона
+        filename: str
+            Название файла
+        """
+
         env = Environment(loader=FileSystemLoader("."))
         template = env.get_template(template_name)
         render_rules = cls.get_render_rules(input_connect)
@@ -323,6 +551,20 @@ class Report:
 
     @classmethod
     def get_render_rules(cls, input_connect: InputConnectReport) -> Dict[str, Any]:
+        """
+        Метод для получения правил отрисовки шаблона.
+
+        Parameters
+        ----------
+        input_connect: InputConnectReport
+            Объект, хранящий в себе данные для построения графика
+
+        Returns
+        -------
+        Dict[str, Any]
+            Словарь с правилами отрисовки
+        """
+
         rules = {
             "profession": input_connect.profession,
             "image_path": path.abspath("graph.png"),
