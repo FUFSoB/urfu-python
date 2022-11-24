@@ -9,3 +9,9 @@
 pip install -r requirements.txt
 paru -S wkhtmltopdf-static
 ```
+
+## Задания
+
+### Тесты
+
+![tests](/docs/tests.png)
