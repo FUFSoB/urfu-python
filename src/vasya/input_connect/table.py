@@ -101,7 +101,6 @@ class InputConnectTable(InputConnect):
         ]
 
         if filter_by[0] or len(filter_by) > 1:
-            print(filter_by)
             if len(filter_by) != 2:
                 raise VasyaException("Формат ввода некорректен")
             if filter_by[0] not in Vacancy.reverse_key_names:

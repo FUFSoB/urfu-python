@@ -316,6 +316,31 @@ class Vacancy:
             " ".join(i.split()) for i in cls.re_tags.sub("", value).split("\r\n")
         ).strip()
 
+    # @staticmethod
+    # def _parse_time(value: str) -> datetime:  # test1
+    #     return datetime.strptime(text, "%Y-%m-%dT%H:%M:%S%z")
+
+    @staticmethod
+    def _parse_time(value: str) -> datetime:  # test2
+        return datetime.fromisoformat(value.split("+")[0])
+
+    # @staticmethod
+    # def _parse_time(value: str) -> datetime:  # test3
+    #     split = value.split("+")[0].split("T")
+    #     return datetime(*map(int, split[0].split("-") + split[1].split(":")))
+
+    # @staticmethod
+    # def _parse_time(value: str) -> datetime:  # test4
+    #     split = value.split("+")[0].split("T")
+    #     return datetime(
+    #         int(split[0].split("-")[0]),
+    #         int(split[0].split("-")[1]),
+    #         int(split[0].split("-")[2]),
+    #         int(split[1].split(":")[0]),
+    #         int(split[1].split(":")[1]),
+    #         int(split[1].split(":")[2]),
+    #     )
+
     def __init__(
         self,
         *,
@@ -371,7 +396,7 @@ class Vacancy:
         )
 
         self.area_name = area_name
-        self.published_at = datetime.strptime(published_at, "%Y-%m-%dT%H:%M:%S%z")
+        self.published_at = self._parse_time(published_at)
 
         self.description = self._str(description) if description else None
         self.key_skills = skillslist(key_skills.split("\n")) if key_skills else None
