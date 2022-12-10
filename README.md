@@ -104,3 +104,8 @@ paru -S wkhtmltopdf-static
 </details>
 
 ![profiler](/docs/profiler.png)
+
+
+# Разделение файла по годам
+
+![split](/docs/split.png)
