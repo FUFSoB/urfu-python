@@ -1,17 +1,17 @@
 from .errors import VasyaException
 from .input_connect import (
     InputConnectBase,
-    InputConnectReport,
     InputConnectTable,
     InputConnectReportMultiprocessing,
     InputConnectReportConcurrent,
+    InputConnectReportSync,
 )
 
 __all__ = (
     "VasyaException",
     "InputConnectBase",
-    "InputConnectReport",
     "InputConnectTable",
     "InputConnectReportMultiprocessing",
     "InputConnectReportConcurrent",
+    "InputConnectReportSync",
 )

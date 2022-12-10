@@ -1,7 +1,7 @@
 #!./venv/bin/python
 
 from vasya import (
-    InputConnectReport,
+    InputConnectReportSync,
     InputConnectTable,
     InputConnectReportMultiprocessing,
     InputConnectReportConcurrent,
@@ -21,7 +21,7 @@ def main():
     choices: Dict[str, Type[InputConnectBase]] = {
         "вакансии": InputConnectTable,
         "статистика": InputConnectReportConcurrent,
-        "old_stats": InputConnectReport,
+        "old_stats": InputConnectReportSync,
         "old_fast_stats": InputConnectReportMultiprocessing,
     }
     while True:

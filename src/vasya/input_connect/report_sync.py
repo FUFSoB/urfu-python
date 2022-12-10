@@ -26,7 +26,7 @@ class StatsData:
     count: int
 
 
-class InputConnectReport(InputConnect):
+class InputConnectReportSync(InputConnect):
     """
     Класс-коннектор для создания отчёта.
 
@@ -66,13 +66,13 @@ class InputConnectReport(InputConnect):
         self.total_vacancies = 0
 
     @classmethod
-    def from_input(cls) -> "InputConnectReport":
+    def from_input(cls) -> "InputConnectReportSync":
         """
         Метод для создания объекта класса по вводу пользователя.
 
         Returns
         -------
-        InputConnectReport
+        InputConnectReportSync
             Объект класса
         """
         file_name = input("Введите название файла: ")
@@ -307,14 +307,16 @@ class Report:
         return data[cell]
 
     @classmethod
-    def generate_excel(cls, input_connect: InputConnectReport, filename: str) -> None:
+    def generate_excel(
+        cls, input_connect: InputConnectReportSync, filename: str
+    ) -> None:
         """
         Метод для генерации excel-файла.
         Создаёт файл filename в директории, из которой был запущен скрипт.
 
         Parameters
         ----------
-        input_connect: InputConnectReport
+        input_connect: InputConnectReportSync
             Объект, хранящий в себе статистику
         filename: str
             Название файла
@@ -452,14 +454,16 @@ class Report:
         axes.pie(values, labels=names)
 
     @classmethod
-    def generate_image(cls, input_connect: InputConnectReport, filename: str) -> None:
+    def generate_image(
+        cls, input_connect: InputConnectReportSync, filename: str
+    ) -> None:
         """
         Метод для генерации изображения.
         Создаёт файл filename в директории, из которой был запущен скрипт.
 
         Parameters
         ----------
-        input_connect: InputConnectReport
+        input_connect: InputConnectReportSync
             Объект, хранящий в себе данные для построения графика
         filename: str
             Название файла
@@ -515,7 +519,7 @@ class Report:
 
     @classmethod
     def generate_pdf(
-        cls, input_connect: InputConnectReport, template_name: str, filename: str
+        cls, input_connect: InputConnectReportSync, template_name: str, filename: str
     ) -> None:
         """
         Метод для генерации pdf-файла.
@@ -523,7 +527,7 @@ class Report:
 
         Parameters
         ----------
-        input_connect: InputConnectReport
+        input_connect: InputConnectReportSync
             Объект, хранящий в себе данные для построения графика
         template_name: str
             Путь до файла шаблона
@@ -550,13 +554,13 @@ class Report:
         )
 
     @classmethod
-    def get_render_rules(cls, input_connect: InputConnectReport) -> Dict[str, Any]:
+    def get_render_rules(cls, input_connect: InputConnectReportSync) -> Dict[str, Any]:
         """
         Метод для получения правил отрисовки шаблона.
 
         Parameters
         ----------
-        input_connect: InputConnectReport
+        input_connect: InputConnectReportSync
             Объект, хранящий в себе данные для построения графика
 
         Returns
