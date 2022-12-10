@@ -4,6 +4,7 @@ from vasya import (
     InputConnectReport,
     InputConnectTable,
     InputConnectReportMultiprocessing,
+    InputConnectReportConcurrent,
     VasyaException,
 )
 from pathlib import Path
@@ -19,13 +20,12 @@ def main():
 
     choices: Dict[str, Type[InputConnectBase]] = {
         "вакансии": InputConnectTable,
-        "статистика": InputConnectReport,
-        "быстрая статистика": InputConnectReportMultiprocessing,
+        "статистика": InputConnectReportConcurrent,
+        "old_stats": InputConnectReport,
+        "old_fast_stats": InputConnectReportMultiprocessing,
     }
     while True:
-        choice = input(
-            "Введите действие (вакансии / статистика / быстрая статистика): "
-        ).lower()
+        choice = input("Введите действие (вакансии / статистика): ").lower()
         if not choices.get(choice):
             print("Неверный ввод")
             continue

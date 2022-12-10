@@ -4,12 +4,14 @@ from .input_connect import (
     InputConnectReport,
     InputConnectTable,
     InputConnectReportMultiprocessing,
+    InputConnectReportConcurrent,
 )
 
 __all__ = (
+    "VasyaException",
     "InputConnectBase",
     "InputConnectReport",
     "InputConnectTable",
     "InputConnectReportMultiprocessing",
-    "VasyaException",
+    "InputConnectReportConcurrent",
 )

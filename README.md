@@ -118,13 +118,19 @@ paru -S wkhtmltopdf-static
 
 Файл `input-regular.txt`
 
-    статистика
+    old_stats
     /extra/fufsob/vuz/git/urfu-python/src/data/vacancies_by_year.csv
     Программист
 
 Файл `input-multi.txt`
 
-    быстрая статистика
+    old_fast_stats
+    /extra/fufsob/vuz/git/urfu-python/src/data
+    Программист
+
+Файл `input-concurrent.txt`
+
+    статистика
     /extra/fufsob/vuz/git/urfu-python/src/data
     Программист
 
