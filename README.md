@@ -109,3 +109,25 @@ paru -S wkhtmltopdf-static
 # Разделение файла по годам
 
 ![split](/docs/split.png)
+
+
+# Разделение на множество процессов
+
+<details>
+  <summary>Файлы, используемые в качестве ввода</summary>
+
+Файл `input-regular.txt`
+
+    статистика
+    /extra/fufsob/vuz/git/urfu-python/src/data/vacancies_by_year.csv
+    Программист
+
+Файл `input-multi.txt`
+
+    быстрая статистика
+    /extra/fufsob/vuz/git/urfu-python/src/data
+    Программист
+
+</details>
+
+![multi](/docs/multi.png)

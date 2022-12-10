@@ -1,6 +1,11 @@
 #!./venv/bin/python
 
-from vasya import InputConnectReport, InputConnectTable, VasyaException
+from vasya import (
+    InputConnectReport,
+    InputConnectTable,
+    InputConnectReportMultiprocessing,
+    VasyaException,
+)
 from pathlib import Path
 
 from typing import Dict, Type
@@ -15,9 +20,12 @@ def main():
     choices: Dict[str, Type[InputConnectBase]] = {
         "вакансии": InputConnectTable,
         "статистика": InputConnectReport,
+        "быстрая статистика": InputConnectReportMultiprocessing,
     }
     while True:
-        choice = input("Введите действие (вакансии / статистика): ").lower()
+        choice = input(
+            "Введите действие (вакансии / статистика / быстрая статистика): "
+        ).lower()
         if not choices.get(choice):
             print("Неверный ввод")
             continue
