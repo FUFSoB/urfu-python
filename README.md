@@ -141,3 +141,9 @@ paru -S wkhtmltopdf-static
 ### Курс валют
 
 ![rates](/docs/rates.png)
+
+Файлы  `src/extra`
+
+### Объединение salary и hh
+
+Находятся в `src/extra`
