@@ -6,3 +6,4 @@ __pycache__/
 report.xlsx
 graph.png
 report.pdf
+!src/extra/rates.csv

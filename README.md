@@ -106,12 +106,12 @@ paru -S wkhtmltopdf-static
 ![profiler](/docs/profiler.png)
 
 
-# Разделение файла по годам
+### Разделение файла по годам
 
 ![split](/docs/split.png)
 
 
-# Разделение на множество процессов
+### Разделение на множество процессов
 
 <details>
   <summary>Файлы, используемые в качестве ввода</summary>
@@ -137,3 +137,7 @@ paru -S wkhtmltopdf-static
 </details>
 
 ![multi](/docs/multi.png)
+
+### Курс валют
+
+![rates](/docs/rates.png)

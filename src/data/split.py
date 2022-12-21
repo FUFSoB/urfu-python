@@ -22,7 +22,7 @@ def split_csv_by_year(csv_file_path: str) -> None:
         reader = csv.reader(csv_file, delimiter=",")
         header = next(reader)
         date_index = header.index("published_at")
-        data = [row for row in reader if all(row)]
+        data = [row for row in reader]
 
     years = set(row[date_index].split("-")[0] for row in data)
 
