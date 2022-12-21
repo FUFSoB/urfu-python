@@ -11,6 +11,7 @@ current_dir = Path(__file__).parent
 
 
 def get_counts(file_name: str):
+    """Возвращает словарь с количеством встречаемости валюты и минимальную и максимальную дату публикации вакансии."""
     with open(file_name, "r") as f:
         reader = csv.reader(f)
         _ = next(reader)
@@ -31,6 +32,7 @@ def get_counts(file_name: str):
 def get_rates(
     common: Dict[str, int], min_published_at: datetime, max_published_at: datetime
 ):
+    """Создаёт файл с курсами валют за указанный период."""
     date_req1 = min_published_at.strftime("%d/%m/%Y")
     date_req2 = max_published_at.strftime("%d/%m/%Y")
     vals = {
