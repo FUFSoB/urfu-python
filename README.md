@@ -142,7 +142,7 @@ paru -S wkhtmltopdf-static
 
 ![rates](/docs/rates.png)
 
-Файлы  `src/extra`
+Файлы в `src/extra`
 
 ### Объединение salary и hh
 

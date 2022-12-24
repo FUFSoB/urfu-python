@@ -25,7 +25,9 @@ def merge_salary(file_name: str):
         reader = csv.reader(f)
         _ = next(reader)
         for row in reader:
-            s = (number(row[1]) + number(row[2])) / 2
+            n1 = number(row[1])
+            n2 = number(row[2])
+            s = (n1 + n2) / ((bool(n1) + bool(n2)) or 1)
             if s == 0:
                 continue
             if row[3] == "":
