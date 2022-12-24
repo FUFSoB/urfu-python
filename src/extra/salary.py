@@ -28,18 +28,15 @@ def merge_salary(file_name: str):
             n1 = number(row[1])
             n2 = number(row[2])
             s = (n1 + n2) / ((bool(n1) + bool(n2)) or 1)
-            if s == 0:
-                continue
-            if row[3] == "":
-                continue
-            date = datetime.fromisoformat(row[5].split("+")[0]).strftime("%Y-%m")
-            if row[3] == "RUR":
-                pass
-            elif row[3] not in rates[date]:
-                continue
-            else:
-                rate = number(rates[date][row[3]])
-                s = s * rate
+            if s != 0 and row[3] != "":
+                date = datetime.fromisoformat(row[5].split("+")[0]).strftime("%Y-%m")
+                if row[3] == "RUR":
+                    pass
+                elif row[3] not in rates[date]:
+                    continue
+                else:
+                    rate = number(rates[date][row[3]])
+                    s = s * rate
             result.append([row[0], s, row[4], row[5]])
     with open(current_dir / "salary.csv", "w") as f:
         result_writer = csv.writer(f)
