@@ -1,4 +1,5 @@
 *.csv
+*.sqlite
 venv/
 .idea/
 __pycache__/
@@ -9,3 +10,4 @@ report.pdf
 !src/extra/rates.csv
 !src/extra/salary_100.csv
 !src/extra/hh.csv
+!src/extra/rates.sqlite

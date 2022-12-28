@@ -151,3 +151,7 @@ paru -S wkhtmltopdf-static
 ### Курс в бд
 
 Файлы в `src/extra`
+
+### ЗП в бд
+
+![rates](/docs/sql.png)

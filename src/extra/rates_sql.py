@@ -39,7 +39,6 @@ def csv_to_sql():
                     None,
                     None,
                 )
-                print(data)
                 conn.execute(
                     "INSERT INTO rates VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", data
                 )
