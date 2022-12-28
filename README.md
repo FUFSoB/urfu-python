@@ -147,3 +147,7 @@ paru -S wkhtmltopdf-static
 ### Объединение salary и hh
 
 Находятся в `src/extra`
+
+### Курс в бд
+
+Файлы в `src/extra`
