@@ -17,11 +17,11 @@ def csv_to_sql():
                 """
                 CREATE TABLE rates (
                     date TEXT,
-                    BYR REAL,
                     USD REAL,
-                    EUR REAL,
                     KZT REAL,
+                    BYR REAL,
                     UAH REAL,
+                    EUR REAL,
                     AZN REAL,
                     KGS REAL,
                     UZS REAL,
